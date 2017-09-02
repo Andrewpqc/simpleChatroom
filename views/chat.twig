@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>聊天| 聊天室</title>
+</head>
+<body>
+<h1>欢迎你，<span id='username'>{{ username }}</span></h1>
+
+<ul id="ul">
+
+</ul>
+
+<input type="text" name="content" id="content">
+<button id="submit">发布</button>
+
+<script type="text/javascript" src='/socket.io/socket.io.js'></script>
+<script type="text/javascript" src='/public/javascripts/plugin/jquery-1.12.4.js'></script>
+<script type="text/javascript">
+    $(function () {
+        var socket = io.connect('http://localhost:3000');//括号内的是网站的地址或ip
+        //告诉客户端链接者的名字
+        socket.emit('tell_my_name_to_server', $("#username").text());
+
+        $("#submit").click(function () {
+            socket.emit("c2s", {user: $("#username").text(), content: $('#content').val()});
+            $("#content").val('')
+
+        });
+        $("#content").keydown(function (e) {
+            if (e.keyCode === 13) {
+                socket.emit("c2s", {user: $("#username").text(), content: $('#content').val()});
+                $("#content").val(" ");
+            }
+
+        });
+        socket.on('s2c', function (msg) {
+            $("#ul").prepend("<li><b>" + msg.user + "</b>说" + msg.content + "</li>")
+        });
+
+        socket.on('into', function (data) {
+            $("#ul").prepend("<li><h3>" + '系统消息' + "</b>" + data + "</h3></li>")
+        });
+
+        socket.on('out', function (data) {
+            $('#ul').prepend("<li><h3><b>" + '系统消息' + "</b>" + data + "</h3></li>")
+        });
+    });
+</script>
+
+</body>
+</html>
